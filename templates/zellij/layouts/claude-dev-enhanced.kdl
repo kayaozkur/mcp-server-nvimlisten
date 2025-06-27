@@ -1,0 +1,101 @@
+layout {
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="zellij:tab-bar"
+        }
+        children
+        pane size=2 borderless=true {
+            plugin location="zellij:status-bar"
+        }
+    }
+    
+    tab name="Claude Dev Enhanced" focus=true {
+        pane split_direction="vertical" {
+            pane split_direction="horizontal" size="40%" {
+                pane name="editor" {
+                    command "nvim"
+                    args "--listen" "127.0.0.1:7001"
+                    start_suspended false
+                }
+                pane name="navigator" {
+                    command "nvim" 
+                    args "--listen" "127.0.0.1:7002"
+                    start_suspended false
+                }
+                pane name="reference" {
+                    command "nvim"
+                    args "--listen" "127.0.0.1:7003"
+                    start_suspended false
+                }
+            }
+            pane split_direction="horizontal" size="30%" {
+                pane name="extra" {
+                    command "nvim"
+                    args "--listen" "127.0.0.1:7004"
+                    start_suspended false
+                }
+                pane name="terminal" focus=true {
+                    command "bash"
+                    args "-c" "echo '🚀 Claude Dev Enhanced - Terminal Ready'; echo ''; lsd -la --header --group-dirs first; echo ''; echo 'Commands: lsd, fzf, fd, rg'; exec bash"
+                }
+                pane name="file-explorer" {
+                    command "bash"
+                    args "-c" "echo '📁 File Explorer - Interactive Mode'; echo ''; echo 'Press Enter to start interactive file browser...'; read; while true; do clear; pwd; echo ''; lsd -la --header --group-dirs first | fzf --preview '[[ -f {} ]] && bat --style=numbers --color=always {} || lsd -la {}' --preview-window=right:60%:wrap --header='Select file/directory (Ctrl+C to exit)' --bind='enter:execute(echo {})'; echo ''; echo 'Press Enter to browse again...'; read; done"
+                    start_suspended false
+                }
+            }
+            pane split_direction="horizontal" size="30%" {
+                pane name="logs" {
+                    command "nvim"
+                    args "--listen" "127.0.0.1:7777" "-c" "enew | set buftype=nofile | set bufhidden=hide | set noswapfile"
+                    start_suspended false
+                }
+                pane name="history" {
+                    command "bash"
+                    args "-c" "tail -f /tmp/claude-commands.log 2>/dev/null || echo 'Command history will appear here...'; exec bash"
+                }
+                pane name="git" {
+                    command "bash"
+                    args "-c" "watch -n 2 'git status -sb && echo && git diff --stat'"
+                }
+            }
+        }
+    }
+    
+    tab name="Orchestra" {
+        pane split_direction="horizontal" {
+            pane name="primary" {
+                command "nvim"
+                args "--listen" "127.0.0.1:7777"
+            }
+            pane name="secondary" {
+                command "nvim"
+                args "--listen" "127.0.0.1:7778"
+            }
+            pane name="tertiary" {
+                command "nvim"
+                args "--listen" "127.0.0.1:7779"
+            }
+        }
+    }
+}
+
+keybinds {
+    normal {
+        bind "Ctrl p" { SwitchToMode "Pane"; }
+        bind "Ctrl t" { SwitchToMode "Tab"; }
+        bind "Ctrl s" { SwitchToMode "Scroll"; }
+        bind "Ctrl o" { SwitchToMode "Session"; }
+        bind "Ctrl q" { Quit; }
+    }
+    pane {
+        bind "h" "Left" { MoveFocus "Left"; }
+        bind "l" "Right" { MoveFocus "Right"; }
+        bind "j" "Down" { MoveFocus "Down"; }
+        bind "k" "Up" { MoveFocus "Up"; }
+        bind "f" { ToggleFocusFullscreen; SwitchToMode "Normal"; }
+        bind "x" { CloseFocus; SwitchToMode "Normal"; }
+        bind "n" { NewPane; SwitchToMode "Normal"; }
+        bind "Esc" { SwitchToMode "Normal"; }
+    }
+}
